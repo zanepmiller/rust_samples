@@ -6,6 +6,35 @@
 
 use std::collections::HashMap;
 
-fn summarize_list(list : &Vec<i32>) -> (i32, i32) {
-    let mut counts : HashMap<u32, i32> = HashMap::new();
+pub fn summarize_list(list : &Vec<i32>) -> (i32, Vec<i32>) {
+    let mut ret_val : (i32, Vec<i32>) = (0, Vec::new());
+    let mut counts : HashMap<i32, u32> = HashMap::new();
+    let mut sorted = list.clone();
+    sorted.sort();
+    
+    //  Calculate median
+    let input_len = sorted.len();
+    if input_len % 2 == 0 {
+        ret_val.0 = (sorted[input_len / 2] + sorted[(input_len / 2) + 1]) / 2;
+    } else {
+        ret_val.0 = sorted[input_len / 2];
+    }
+
+    //  Calculate mode
+    //  Setup to do a single pass for O(n)
+    let mut max_count : u32 = 0;
+    for entry in sorted {
+        let count = counts.entry(entry).or_insert(0);
+        *count +=1;
+
+        if *count == max_count {
+            ret_val.1.push(entry);
+        } else if *count > max_count {
+            max_count = *count;
+            ret_val.1.clear();
+            ret_val.1.push(entry);
+        }
+    }
+
+    ret_val
 }
