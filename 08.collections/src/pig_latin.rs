@@ -5,3 +5,14 @@
 //   start with a vowel have hay added to the end instead (apple becomes 
 //   apple-hay). Keep in mind the details about UTF-8 encoding!"
 
+const PUNCTUATION : &'static [&str] = &[":", ";",",", ".", "?"];
+const VOWELS : &'static [&str] = &["a", "e", "i", "o", "u"];
+
+pub fn pigify(input : &String) -> String {
+    let mut ret_val = String::new();
+
+    for word in input.split(" ") {
+    }
+
+    ret_val
+}

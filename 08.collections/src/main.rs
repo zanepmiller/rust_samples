@@ -1,3 +1,5 @@
+use std::io;
+
 mod vec_stats;
 mod pig_latin;
 mod emp_list;
