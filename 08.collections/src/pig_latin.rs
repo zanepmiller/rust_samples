@@ -5,13 +5,45 @@
 //   start with a vowel have hay added to the end instead (apple becomes 
 //   apple-hay). Keep in mind the details about UTF-8 encoding!"
 
-const PUNCTUATION : &'static [&str] = &[":", ";",",", ".", "?"];
-const VOWELS : &'static [&str] = &["a", "e", "i", "o", "u"];
+const PUNCTUATION : &'static [char] = &[':', ';', ',', '.', '?'];
+const VOWELS : &'static [char] = &['a', 'e', 'i', 'o', 'u'];
 
 pub fn pigify(input : &String) -> String {
     let mut ret_val = String::new();
 
     for word in input.split(" ") {
+        let first = match word.chars().next() {
+            Some(i) => i,
+            None => '\0',
+        };
+        let last = match word.chars().last() {
+            Some(i) => i,
+            None => '\0',
+        };
+        
+        let mut suffix = String::from("");
+        match first.is_ascii_alphabetic() {
+            true => {
+                match VOWELS.contains(&first) {
+                    true => {
+                        suffix.push_str("-hay");
+                        ret_val.push_str(&word[..]);
+                    },
+                    false => {
+                        suffix.push_str(&format!("-{first}ay"));
+                        ret_val.push_str(&word[1..]);
+                    },
+                }
+            },
+            false => ret_val.push_str(&word[..]),
+        };
+
+        match PUNCTUATION.contains(&last) {
+            true => suffix.push(last),
+            false => (),
+        };
+        
+        ret_val = ret_val + &suffix + &" ";
     }
 
     ret_val

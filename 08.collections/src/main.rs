@@ -1,4 +1,6 @@
-use std::io;
+use std::env;
+use std::fs;
+
 
 mod vec_stats;
 mod pig_latin;
@@ -12,4 +14,11 @@ fn main() {
              input_vec,
              stats_out.0,
              stats_out.1);
+    println!("{}", env::current_dir().expect("").into_os_string().into_string().expect(""));
+
+    let contents = fs::read_to_string("src/address.txt").
+        expect("Should have been able to read address.txt.");
+    let pig_contents = pig_latin::pigify(&contents);
+    fs::write("pig_address.txt", pig_contents).
+        expect("Unable to write pig_context.txt.");
 }
