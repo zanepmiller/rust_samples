@@ -7,4 +7,71 @@
 //   all people in a department or all people in the company by department,
 //   sorted alphabetically."
 
-use std::io;
+use std::io::{self, Write};
+use std::collections::HashMap;
+
+static USAGE : &str = "Add <X> to <Y>: Adds employee named X to department Y.\nList all:       Lists all employees by department.\nList <X>:       Lists all employees in department X.\nMenu:           Prints this menu.\nQuit:           Exits the program.";
+
+//  Entry function to begin dummy interface
+pub fn menu() -> () {
+
+    let mut emps : HashMap<String, Vec<String>> = HashMap::new();
+
+    println!("~~~Welcome to the Employee Tracker!~~~\n\n{}", USAGE);
+
+    let mut input = String::new();
+    loop {
+        input.clear();
+        print!("\n> ");
+        io::stdout().flush().expect("Could not flush stdout!");
+
+        io::stdin()
+            .read_line(&mut input)
+            .expect("Failed to read line");
+
+        let mut i_line = input.trim().split_whitespace();
+        match i_line.next() {
+            None => (),
+            Some(i) => {
+                match &i.to_ascii_lowercase()[..] {
+                    "add" => println!("In add"),
+                    "list" => {
+                        println!("In list");
+                        match i_line.next() {
+                            None => println!("\"List\" must be followed with 'all' or a department."),
+                            Some(n) => {
+                                match &n.to_ascii_lowercase()[..] {
+                                    "all" => {
+                                        for (key, value) in &emps {
+                                            println!("{}:", key);
+                                            for name in value {
+                                                println!("\t{}", name);
+                                            }
+                                        }
+                                    },
+                                    _ => {
+                                        match emps.contains_key(n) {
+                                            true => {
+                                                println!("{}", n);
+                                                for name in emps.get(n).expect("Name vector failed!") {
+                                                    println!("\t{}", name);
+                                                }
+                                            },
+                                            false => print!("Department name \"{}\" not found!", n)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "quit" => {
+                        println!("Thank you for using Employee Tracker!");
+                        break;
+                    },
+                    "menu" => println!("{}", USAGE),
+                    _ => println!("I didn't understand that command."),
+                }
+            }
+        }
+    }
+}
