@@ -27,20 +27,20 @@ pub fn pigify(input : &String) -> String {
                 match VOWELS.contains(&first) {
                     true => {
                         suffix.push_str("-hay");
-                        ret_val.push_str(&word[..]);
+                        ret_val.push_str(&word[..word.len()-1]);
                     },
                     false => {
                         suffix.push_str(&format!("-{first}ay"));
-                        ret_val.push_str(&word[1..]);
+                        ret_val.push_str(&word[1..word.len()-1]);
                     },
                 }
             },
-            false => ret_val.push_str(&word[..]),
+            false => ret_val.push_str(&word[..word.len()-1]),
         };
 
         match PUNCTUATION.contains(&last) {
             true => suffix.push(last),
-            false => (),
+            false => ret_val.push(last),
         };
         
         ret_val = ret_val + &suffix + &" ";
