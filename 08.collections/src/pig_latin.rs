@@ -11,39 +11,43 @@ const VOWELS : &'static [char] = &['a', 'e', 'i', 'o', 'u'];
 pub fn pigify(input : &String) -> String {
     let mut ret_val = String::new();
 
-    for word in input.split(" ") {
-        let first = match word.chars().next() {
-            Some(i) => i,
-            None => '\0',
-        };
-        let last = match word.chars().last() {
-            Some(i) => i,
-            None => '\0',
-        };
-        
-        let mut suffix = String::from("");
-        match first.is_ascii_alphabetic() {
-            true => {
-                match VOWELS.contains(&first) {
-                    true => {
-                        suffix.push_str("-hay");
-                        ret_val.push_str(&word[..word.len()-1]);
-                    },
-                    false => {
-                        suffix.push_str(&format!("-{first}ay"));
-                        ret_val.push_str(&word[1..word.len()-1]);
-                    },
-                }
-            },
-            false => ret_val.push_str(&word[..word.len()-1]),
-        };
+    for line in input.lines() {
+        for word in line.split(" ") {
+            if word.len() < 1 {continue};
+            let first = match word.chars().next() {
+                Some(i) => i,
+                None => '\0',
+            };
+            let last = match word.chars().last() {
+                Some(i) => i,
+                None => '\0',
+            };
+            
+            let mut suffix = String::from("");
+            match first.is_ascii_alphabetic() {
+                true => {
+                    match VOWELS.contains(&first) {
+                        true => {
+                            suffix.push_str("-hay");
+                            ret_val.push_str(&word[..word.len()-1]);
+                        },
+                        false => {
+                            suffix.push_str(&format!("-{first}ay"));
+                            ret_val.push_str(&word[1..word.len()-1]);
+                        },
+                    }
+                },
+                false => ret_val.push_str(&word[..word.len()-1]),
+            };
 
-        match PUNCTUATION.contains(&last) {
-            true => suffix.push(last),
-            false => ret_val.push(last),
-        };
-        
-        ret_val = ret_val + &suffix + &" ";
+            match PUNCTUATION.contains(&last) {
+                true => suffix.push(last),
+                false => ret_val.push(last),
+            };
+            
+            ret_val = ret_val + &suffix + &" ";
+        }
+        ret_val.push('\n');
     }
 
     ret_val
