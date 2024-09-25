@@ -15,7 +15,7 @@ static USAGE : &str = "Add <X> to <Y>: Adds employee named X to department Y.\nL
 //  Entry function to begin dummy interface
 pub fn menu() -> () {
 
-    let mut emps : HashMap<String, Vec<String>> = HashMap::new();
+    let mut emps : HashMap<&str, Vec<&str>> = HashMap::new();
 
     println!("~~~Welcome to the Employee Tracker!~~~\n\n{}", USAGE);
 
@@ -34,9 +34,27 @@ pub fn menu() -> () {
             None => (),
             Some(i) => {
                 match &i.to_ascii_lowercase()[..] {
-                    "add" => println!("In add"),
+                    "add" => {
+                        match input.find("to") {
+                            None => println!("Add command must be formatted as Add <X> to <Y>!"),
+                            Some(pos) => {
+                                match input[pos..].trim().len() {
+                                    0 | 1 => println!("Department name must be at least 2 characters!"),
+                                    _ => {
+                                        let mut name = String::new();
+                                        let mut dept = String::new();
+                                        &input[4..pos].clone_into(&mut name);
+                                        match emps.get_mut(&input[pos+3..]) {
+                                            None => _ = emps.insert(&input[pos+3..], vec![&name])
+                                                    .expect("Could not insert!"),
+                                            Some(list) => list.push(&name),
+                                        }
+                                    },
+                                }
+                            }
+                        }
+                    },
                     "list" => {
-                        println!("In list");
                         match i_line.next() {
                             None => println!("\"List\" must be followed with 'all' or a department."),
                             Some(n) => {
