@@ -26,7 +26,7 @@ pub fn pigify(input : &String) -> String {
             let mut suffix = String::from("");
             match first.is_ascii_alphabetic() {
                 true => {
-                    match VOWELS.contains(&first) {
+                    match VOWELS.contains(&first.to_ascii_lowercase()) {
                         true => {
                             suffix.push_str("-hay");
                             ret_val.push_str(&word[..word.len()-1]);
