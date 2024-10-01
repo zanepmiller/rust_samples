@@ -15,7 +15,7 @@ static USAGE : &str = "Add <X> to <Y>: Adds employee named X to department Y.\nL
 //  Entry function to begin dummy interface
 pub fn menu() -> () {
 
-    let mut emps : HashMap<&str, Vec<&str>> = HashMap::new();
+    let mut emps : HashMap<String, Vec<String>> = HashMap::new();
 
     println!("~~~Welcome to the Employee Tracker!~~~\n\n{}", USAGE);
 
@@ -35,29 +35,25 @@ pub fn menu() -> () {
             Some(i) => {
                 match &i.to_ascii_lowercase()[..] {
                     "add" => {
-                        match input.find("to") {
-                            None => println!("Add command must be formatted as Add <X> to <Y>!"),
-                            Some(pos) => {
-                                match input[pos..].trim().len() {
-                                    0 | 1 => println!("Department name must be at least 2 characters!"),
-                                    _ => {
-                                        let mut name = String::new();
-                                        let mut dept = String::new();
-                                        &input[4..pos].clone_into(&mut name);
-                                        match emps.get_mut(&input[pos+3..]) {
-                                            None => _ = emps.insert(&input[pos+3..], vec![&name])
-                                                    .expect("Could not insert!"),
-                                            Some(list) => list.push(&name),
-                                        }
+                        match parse_add_str(&input) {
+                            None => println!("The input \"{}\" was invalid!", &input),
+                            Some(a_str) => {
+                                match emps.get_mut(&a_str.0) {
+                                    None => {
+                                        emps.insert(a_str.0, vec![a_str.1]);
                                     },
+                                    Some(vec) => {
+                                        vec.push(a_str.1);
+                                    }
                                 }
-                            }
+                            },
                         }
                     },
                     "list" => {
                         match i_line.next() {
                             None => println!("\"List\" must be followed with 'all' or a department."),
                             Some(n) => {
+                                let n = n.to_string();
                                 match &n.to_ascii_lowercase()[..] {
                                     "all" => {
                                         for (key, value) in &emps {
@@ -68,10 +64,10 @@ pub fn menu() -> () {
                                         }
                                     },
                                     _ => {
-                                        match emps.contains_key(n) {
+                                        match emps.contains_key(&n) {
                                             true => {
-                                                println!("{}", n);
-                                                for name in emps.get(n).expect("Name vector failed!") {
+                                                println!("{}:", n);
+                                                for name in emps.get(&n).expect("Name vector failed!") {
                                                     println!("\t{}", name);
                                                 }
                                             },
@@ -91,5 +87,19 @@ pub fn menu() -> () {
                 }
             }
         }
+    }
+}
+
+fn parse_add_str(i_str : &str) -> Option<(String, String)> {
+    match i_str[..].find("to") {
+        None => return Option::None,
+        Some(pos) => {
+            if pos < i_str.len() + 3 {
+                return Option::Some((i_str[pos+3..].trim().to_string(),
+                                     i_str[4..pos].trim().to_string()));
+            } else {
+                return Option::None;
+            }
+        },
     }
 }
