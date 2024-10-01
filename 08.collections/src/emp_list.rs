@@ -57,9 +57,15 @@ pub fn menu() -> () {
                                 let n = n.to_string();
                                 match &n.to_ascii_lowercase()[..] {
                                     "all" => {
-                                        for (key, value) in &emps {
+                                        let mut emp_keys : Vec<&String> = emps.keys().collect::<Vec<&String>>();
+                                        emp_keys.sort();
+                                        if emp_keys.len() < 1 {
+                                            println!("No employees in tracker; try adding some.");
+                                            continue;
+                                        }
+                                        for key in emp_keys {
                                             println!("{}:", key);
-                                            for name in value {
+                                            for name in emps.get(key).expect("Invalid key!") {
                                                 println!("\t{}", name);
                                             }
                                         }
@@ -72,7 +78,7 @@ pub fn menu() -> () {
                                                     println!("\t{}", name);
                                                 }
                                             },
-                                            false => print!("Department name \"{}\" not found!", n)
+                                            false => print!("Department name \"{}\" not found!", n.trim())
                                         }
                                     }
                                 }
@@ -95,7 +101,7 @@ fn parse_add_str(i_str : &str) -> Option<(String, String)> {
     match i_str[..].find("to") {
         None => return Option::None,
         Some(pos) => {
-            if pos < i_str.len() + 3 {
+            if pos < i_str.trim().len() - 4 {
                 return Option::Some((i_str[pos+3..].trim().to_string(),
                                      i_str[4..pos].trim().to_string()));
             } else {
