@@ -44,6 +44,7 @@ pub fn menu() -> () {
                                     },
                                     Some(vec) => {
                                         vec.push(a_str.1);
+                                        vec.sort();
                                     }
                                 }
                             },
