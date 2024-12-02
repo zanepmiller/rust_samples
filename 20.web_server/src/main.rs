@@ -2,6 +2,8 @@ use std::{
     fs,
     io::{prelude::*, BufReader},
     net::{TcpListener, TcpStream},
+    thread,
+    time::Duration,
 };
 
 fn main() {
@@ -10,9 +12,12 @@ fn main() {
     for stream in listener.incoming() {
         let stream = stream.unwrap();
 
-        handle_connection(stream);
+        thread::spawn(|| {
+            handle_connection(stream);
+        });
     }
 }
+
 
 fn handle_connection(mut stream: TcpStream) {
     let buf_reader = BufReader::new(&stream);
