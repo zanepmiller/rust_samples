@@ -1,18 +1,21 @@
 use std::{
-    fs,
-    io::{prelude::*, BufReader},
-    net::{TcpListener, TcpStream},
-    thread,
+    fs, io::{prelude::*, BufReader}, net::{TcpListener, TcpStream}, process::exit, thread
 };
 use web_server::ThreadPool;
 
 fn main() {
     let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
 
+    let pool = ThreadPool::build(4).unwrap_or_else(|op| {
+        println!("ThreadPool could not be created: {op}");
+        exit(-1)
+    });
+
+
     for stream in listener.incoming() {
         let stream = stream.unwrap();
 
-        thread::spawn(|| {
+        pool.execute(|| {
             handle_connection(stream);
         });
     }
