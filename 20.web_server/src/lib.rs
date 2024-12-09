@@ -1,17 +1,24 @@
+use std::{error::Error, fmt};
+
 pub struct ThreadPool;
+
+#[derive(Debug, Clone)]
+pub struct PoolCreationError;
+
+impl fmt::Display for PoolCreationError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Failed to create ThreadPool")
+    }
+}
+
+impl Error for PoolCreationError {}
 
 impl ThreadPool {
     /// Create a new ThreadPool.
     ///
     /// The size is the number of threads in the pool.
-    ///
-    /// # Panics
-    ///
-    /// The `new` function will panic if the size is zero.
-    pub fn new(size: usize) -> ThreadPool {
-        assert!(size > 0);
-
-        ThreadPool
+    pub fn build(size: usize) -> Result<ThreadPool, PoolCreationError> {
+        Ok(ThreadPool)
     }
 
     pub fn execute<F>(&self, f: F)
