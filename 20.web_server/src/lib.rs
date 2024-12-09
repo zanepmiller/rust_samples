@@ -18,12 +18,15 @@ struct Worker {
     thread : thread::JoinHandle<()>,
 }
 
-struct Job;
+type Job = Box<dyn FnOnce() + Send + 'static>;
 
 impl Worker {
     fn new(id : usize, receiver: Arc<Mutex<mpsc::Receiver<Job>>>) -> Worker {
-        let thread = thread::spawn(|| {
-            receiver;
+        let thread = thread::spawn(move || loop {
+            let job = receiver.lock().expect("Job mutex exploded for Worker id {id}!")
+            .recv().expect("Job recv failed for Worker id {id}!");
+        println!("Worker {id} got a job!");
+            job();
         });
 
         Worker {id, thread}
@@ -56,11 +59,17 @@ impl ThreadPool {
             workers.push(Worker::new(id, Arc::clone(&receiver)));
         }
         Ok(ThreadPool {workers, sender})
-    }
 
-    pub fn execute<F>(&self, f: F)
-    where
+    }
+    /// Farm the passed function to a worker thread.
+    pub fn execute<F>(&self, f: F) 
+    where 
         F: FnOnce() + Send + 'static,
     {
+        let job = Box::new(f);
+        match self.sender.send(job) {
+            Ok(_) => (),
+            Err(e) => print!("Thread exec error {e}")
+        }
     }
 }
