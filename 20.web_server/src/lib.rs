@@ -10,12 +10,12 @@ use std::{error::Error,
 
 pub struct ThreadPool {
     workers: Vec<Worker>,
-    sender: mpsc::Sender<Job>,
+    sender: Option<mpsc::Sender<Job>>,
 }
 
 struct Worker {
     id : usize,
-    thread : thread::JoinHandle<()>,
+    thread : Option<thread::JoinHandle<()>>,
 }
 
 type Job = Box<dyn FnOnce() + Send + 'static>;
@@ -23,13 +23,25 @@ type Job = Box<dyn FnOnce() + Send + 'static>;
 impl Worker {
     fn new(id : usize, receiver: Arc<Mutex<mpsc::Receiver<Job>>>) -> Worker {
         let thread = thread::spawn(move || loop {
-            let job = receiver.lock().expect("Job mutex exploded for Worker id {id}!")
-            .recv().expect("Job recv failed for Worker id {id}!");
-        println!("Worker {id} got a job!");
-            job();
+            let msg = receiver.lock()
+            .expect("Job mutex exploded for Worker id {id}!").recv();
+
+            match msg {
+                Ok(job) => {
+                    println!("Worker {id} got a job!");
+                        job();
+                },
+                Err(_) => {
+                    println!("Worker {id} disconnected; shutting down.");
+                    break;
+                }
+            }
         });
 
-        Worker {id, thread}
+        Worker {
+            id, 
+            thread: Some(thread),
+        }
     }
 }
 
@@ -58,7 +70,10 @@ impl ThreadPool {
         for id in 0..size {
             workers.push(Worker::new(id, Arc::clone(&receiver)));
         }
-        Ok(ThreadPool {workers, sender})
+        Ok(ThreadPool {
+            workers, 
+            sender: Some(sender),
+        })
 
     }
     /// Farm the passed function to a worker thread.
@@ -67,9 +82,24 @@ impl ThreadPool {
         F: FnOnce() + Send + 'static,
     {
         let job = Box::new(f);
-        match self.sender.send(job) {
+        match self.sender.as_ref().unwrap().send(job) {
             Ok(_) => (),
             Err(e) => print!("Thread exec error {e}")
         }
     }
 }
+
+impl Drop for ThreadPool {
+    fn drop(&mut self) {
+        drop(self.sender.take());
+
+        for worker in &mut self.workers {
+            println!("Shutting down worker {}", worker.id);
+
+            if let Some(thread) = worker.thread.take() {
+                thread.join().unwrap();
+            }
+        }
+    }
+}
+
